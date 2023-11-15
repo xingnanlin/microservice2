@@ -19,11 +19,11 @@ conn,cur=connect()
 
 #insert data
 #command="""INSERT INTO subscriptions (subscription_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s)"""
-#cur.execute(command,("1","1","1","1","1","1"))
+#cur.execute(command,("4","4","4","feedbacks","notifications","activity"))
 #conn.commit()
 
 #fetch database
-command="""SELECT * FROM subscriptions"""
-cur.execute(command)
-result=cur.fetchall()
-print(result)
+#command="""SELECT * FROM subscriptions"""
+#cur.execute(command)
+#result=cur.fetchall()
+#print(result)
