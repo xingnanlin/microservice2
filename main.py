@@ -14,12 +14,36 @@ async def root():
     return {"message": "Hello SkyCastle Team"}
 
 @app.get("/subscription/")
-async def get_all_subscription():
+async def get_all_subscription(page_num: int = 1, page_size: int = 2):
+    start = (page_num - 1) * page_size
+    end = start + page_size
+
     command="SELECT * FROM subscriptions"
     conn,cur=connect()
     cur.execute(command)
     result=cur.fetchall()
-    return [{"subscription_id":row[0]} for row in result]
+    response = {
+        "data": result[start:end],
+        "page_num": page_num,
+        "page_size": page_size,
+        "pagination": {}
+    }
+
+    if end >= len(result):
+        response["pagination"]["next"] = None
+        if page_num > 1:
+            response["pagination"]["previous"] = f"/subscription?page_num={page_num - 1}&page_size={page_size}"
+        else:
+            response["pagination"]["previous"] = None
+    else:
+        if page_num > 1:
+            response["pagination"]["previous"] = f"/subscription?page_num={page_num - 1}&page_size={page_size}"
+        else:
+            response["pagination"]["previous"] = None
+
+        response["pagination"]["next"] = f"/subscription?page_num={page_num + 1}&page_size={page_size}"
+    
+    return response
 
 @app.get("/subscription/{subscription_id}")
 async def get_subscription_id(subscription_id: str):
