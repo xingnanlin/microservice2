@@ -14,21 +14,21 @@ def connect():
 conn,cur=connect()
 
 #create a table
-# command="""CREATE TABLE IF NOT EXISTS subscriptions (subscription_id VARCHAR(255) PRIMARY KEY, subscriber_id VARCHAR(255), analyst_id VARCHAR(255), report_id VARCHAR(255), feedbacks VarChar(255), notifications VarChar(255), activity VarChar(255))"""
+# command="""CREATE TABLE IF NOT EXISTS subscriptions (subscription_id INT PRIMARY KEY, user_id INT, analyst_id INT, report_id INT, feedbacks VarChar(255), notifications VarChar(255), activity VarChar(255))"""
 # cur.execute(command)
 # conn.commit()
 
 #insert data
-# subscription_id="1"
-# subscriber_id="1"
-# analyst_id="1"
-# report_id="1"
+# subscription_id=10
+# user_id=0
+# report_id=8
+# analyst_id=1
 # feedbacks="feedbacks: None"
 # notifications="notifications: None"
 # activity="activity: None"
 
-# command="""INSERT INTO subscriptions (subscription_id, subscriber_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-# cur.execute(command,(subscription_id, subscriber_id, analyst_id, report_id, feedbacks, notifications, activity))
+# command="""INSERT INTO subscriptions (subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+# cur.execute(command,(subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity))
 # conn.commit()
 
 #fetch database

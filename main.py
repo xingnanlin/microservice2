@@ -49,7 +49,7 @@ async def get_all_subscription(page_num: int = 1, page_size: int = 2):
 async def get_subscription_id(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s" 
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
     return [{row} for row in result]
 
@@ -57,73 +57,73 @@ async def get_subscription_id(subscription_id: str):
 async def subscriber(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[1]} for row in result]
+    return [{"user_id":row[1]} for row in result]
 
 @app.get("/subscription/{subscription_id}/analyst")
 async def analyst(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[2]} for row in result]
+    return [{"analyst_id":row[2]} for row in result]
 
 @app.get("/subscription/{subscription_id}/report")
 async def report(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[3]} for row in result]
+    return [{"report_id":row[3]} for row in result]
 
 @app.get("/subscription/{subscription_id}/feedback")
 async def report_feedback(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[4]} for row in result]
+    return [{"feedback":row[4]} for row in result]
 
 @app.get("/subscription/{subscription_id}/notifications")
 async def notification(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[5]} for row in result]
+    return [{"notification":row[5]} for row in result]
 
 @app.get("/subscription/{subscription_id}/activity")
 async def activity(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"subscriber_id":row[6]} for row in result]
+    return [{"activity":row[6]} for row in result]
 
 #create new subscription
 @app.post("/subscription/")
 async def create_subscription(body=Body(...)):
     subscription_id=body["subscription_id"]
-    subscriber_id=body["subscriber_id"]
+    user_id=body["user_id"]
     analyst_id=body["analyst_id"]
     report_id=body["report_id"]
     feedbacks=body["feedbacks"]
     notifications=body["notifications"]
     activity=body["activity"]
 
-    command="""INSERT INTO subscriptions (subscription_id, subscriber_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+    command="""INSERT INTO subscriptions (subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
     conn,cur=connect()
-    cur.execute(command,(subscription_id, subscriber_id, analyst_id, report_id, feedbacks, notifications, activity))
+    cur.execute(command,(subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity))
     conn.commit()
-    return {"Updated": body}
+    return {"Created": body}
 
 #delete subscription basted on subscription id
 @app.delete("/subscription/{subscription_id}")
 async def delete_subscription(subscription_id: str):
     command="""DELETE FROM subscriptions WHERE subscription_id=%s"""
     conn,cur=connect()
-    cur.execute(command,(subscription_id))
+    cur.execute(command,(subscription_id,))
     conn.commit()
     return {"message": "subscription deleted"}
 
@@ -131,18 +131,19 @@ async def delete_subscription(subscription_id: str):
 @app.put("/subscription/")
 async def update_subscription(body=Body(...)):
     subscription_id=body["subscription_id"]
-    subscriber_id=body["subscriber_id"]
+    user_id=body["user_id"]
     analyst_id=body["analyst_id"]
     report_id=body["report_id"]
     feedbacks=body["feedbacks"]
     notifications=body["notifications"]
     activity=body["activity"]
 
-    command="""UPDATE subscriptions SET subscriber_id=%s, analyst_id=%s, report_id=%s, feedbacks=%s, notifications=%s, activity=%s WHERE subscription_id=%s"""
+    command="""UPDATE subscriptions SET user_id=%s, analyst_id=%s, report_id=%s, feedbacks=%s, notifications=%s, activity=%s WHERE subscription_id=%s"""
     conn,cur=connect()
-    cur.execute(command,(subscriber_id, analyst_id, report_id, feedbacks, notifications, activity, subscription_id))
+    cur.execute(command,(user_id, analyst_id, report_id, feedbacks, notifications, activity, subscription_id))
     conn.commit()
     return {"Updated": body}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8012)
+
