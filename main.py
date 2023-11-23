@@ -77,13 +77,21 @@ async def report(subscription_id: str):
     result=cur.fetchall()
     return [{"report_id":row[3]} for row in result]
 
+@app.get("/subscription/{subscription_id}/subscription_date")
+async def report(subscription_id: str):
+    command="SELECT * FROM subscriptions WHERE subscription_id=%s"
+    conn,cur=connect()
+    cur.execute(command,(subscription_id,))
+    result=cur.fetchall()
+    return [{"subscription_date":row[4]} for row in result]
+
 @app.get("/subscription/{subscription_id}/feedback")
 async def report_feedback(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
     conn,cur=connect()
     cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"feedback":row[4]} for row in result]
+    return [{"feedback":row[5]} for row in result]
 
 @app.get("/subscription/{subscription_id}/notifications")
 async def notification(subscription_id: str):
@@ -91,7 +99,7 @@ async def notification(subscription_id: str):
     conn,cur=connect()
     cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"notification":row[5]} for row in result]
+    return [{"notification":row[6]} for row in result]
 
 @app.get("/subscription/{subscription_id}/activity")
 async def activity(subscription_id: str):
@@ -99,7 +107,7 @@ async def activity(subscription_id: str):
     conn,cur=connect()
     cur.execute(command,(subscription_id,))
     result=cur.fetchall()
-    return [{"activity":row[6]} for row in result]
+    return [{"activity":row[7]} for row in result]
 
 #create new subscription
 @app.post("/subscription/")
@@ -108,13 +116,14 @@ async def create_subscription(body=Body(...)):
     user_id=body["user_id"]
     analyst_id=body["analyst_id"]
     report_id=body["report_id"]
+    subscription_date=body["subscription_date"]
     feedbacks=body["feedbacks"]
     notifications=body["notifications"]
     activity=body["activity"]
 
-    command="""INSERT INTO subscriptions (subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+    command="""INSERT INTO subscriptions (subscription_id, user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
     conn,cur=connect()
-    cur.execute(command,(subscription_id, user_id, analyst_id, report_id, feedbacks, notifications, activity))
+    cur.execute(command,(subscription_id, user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity))
     conn.commit()
     return {"Created": body}
 
@@ -134,13 +143,14 @@ async def update_subscription(body=Body(...)):
     user_id=body["user_id"]
     analyst_id=body["analyst_id"]
     report_id=body["report_id"]
+    subscription_date=body["subscription_date"]
     feedbacks=body["feedbacks"]
     notifications=body["notifications"]
     activity=body["activity"]
 
-    command="""UPDATE subscriptions SET user_id=%s, analyst_id=%s, report_id=%s, feedbacks=%s, notifications=%s, activity=%s WHERE subscription_id=%s"""
+    command="""UPDATE subscriptions SET user_id=%s, analyst_id=%s, report_id=%s, subscription_date=%s, feedbacks=%s, notifications=%s, activity=%s WHERE subscription_id=%s"""
     conn,cur=connect()
-    cur.execute(command,(user_id, analyst_id, report_id, feedbacks, notifications, activity, subscription_id))
+    cur.execute(command,(user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity, subscription_id))
     conn.commit()
     return {"Updated": body}
 
