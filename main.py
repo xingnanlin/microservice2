@@ -45,6 +45,14 @@ async def get_all_subscription(page_num: int = 1, page_size: int = 2):
     
     return response
 
+@app.get("/subscription/full")
+async def get_full():
+    command="SELECT * FROM subscriptions" 
+    conn,cur=connect()
+    cur.execute(command)
+    result=cur.fetchall()
+    return result
+
 @app.get("/subscription/{subscription_id}")
 async def get_subscription_id(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s" 
