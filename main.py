@@ -2,16 +2,22 @@ from fastapi import FastAPI, Response, Body, status
 import uvicorn
 from resources.students import StudentsResource
 from db.connectdb import connect
-import uuid
+from strawberry.fastapi import GraphQLRouter
+import strawberry
+from query import Query
+
 
 app = FastAPI()
 
-students_resource = StudentsResource()
-
-
 @app.get("/")
-async def root():
+def home():
     return {"message": "Hello SkyCastle Team"}
+
+# add graphql endpoint
+schema = strawberry.Schema(query=Query)
+graphql_app = GraphQLRouter(schema)
+
+app.include_router(graphql_app, prefix="/graphql")
 
 @app.get("/subscription/")
 async def get_all_subscription(page_num: int = 1, page_size: int = 2):
@@ -44,14 +50,6 @@ async def get_all_subscription(page_num: int = 1, page_size: int = 2):
         response["pagination"]["next"] = f"/subscription?page_num={page_num + 1}&page_size={page_size}"
     
     return response
-
-@app.get("/subscription/full")
-async def get_full():
-    command="SELECT * FROM subscriptions" 
-    conn,cur=connect()
-    cur.execute(command)
-    result=cur.fetchall()
-    return result
 
 @app.get("/subscription/{subscription_id}")
 async def get_subscription_id(subscription_id: str):
@@ -161,6 +159,24 @@ async def update_subscription(body=Body(...)):
     cur.execute(command,(user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity, subscription_id))
     conn.commit()
     return {"Updated": body}
+
+@app.get("/subscription/user/{user_id}")
+async def get_user_subscription(user_id: str):
+    command="SELECT * FROM subscriptions WHERE user_id=%s" 
+    conn,cur=connect()
+    cur.execute(command,(user_id,))
+    result=cur.fetchall()
+    return "report id: ",[{row[3]} for row in result]
+
+
+@app.get("/subscription/report/{report_id}")
+async def get_report_users(report_id: str):
+    command="SELECT * FROM subscriptions WHERE report_id=%s" 
+    conn,cur=connect()
+    cur.execute(command,(report_id,))
+    result=cur.fetchall()
+    return "user id: ",[{row[1]} for row in result]
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8012)
