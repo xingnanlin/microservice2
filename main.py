@@ -5,7 +5,7 @@ from db.connectdb import connect
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 from query import Query
-
+import random
 
 app = FastAPI()
 
@@ -50,6 +50,14 @@ async def get_all_subscription(page_num: int = 1, page_size: int = 2):
         response["pagination"]["next"] = f"/subscription?page_num={page_num + 1}&page_size={page_size}"
     
     return response
+
+@app.get("/subscription/full")
+async def all_subscription():
+    command="SELECT * FROM subscriptions" 
+    conn,cur=connect()
+    cur.execute(command)
+    result=cur.fetchall()
+    return [{row} for row in result]
 
 @app.get("/subscription/{subscription_id}")
 async def get_subscription_id(subscription_id: str):
@@ -133,14 +141,58 @@ async def create_subscription(body=Body(...)):
     conn.commit()
     return {"Created": body}
 
-#delete subscription basted on subscription id
-@app.delete("/subscription/{subscription_id}")
-async def delete_subscription(subscription_id: str):
-    command="""DELETE FROM subscriptions WHERE subscription_id=%s"""
+#create new subscription
+@app.post("/subscription/{user_id}/{report_id}")
+async def create_subscription(user_id: str, report_id: str):
+    command="SELECT subscription_id FROM subscriptions" 
     conn,cur=connect()
-    cur.execute(command,(subscription_id,))
+    cur.execute(command)
+    result=cur.fetchall()
+    result=[row[0] for row in result]
+
+    while True:
+        subscription_id=random.randint(1,50)
+        if subscription_id not in result:
+            break
+
+    user_id=user_id
+    analyst_id="1"
+    report_id=report_id
+    subscription_date="Dec 18, 2023"
+    feedbacks="feedbacks"
+    notifications="notifications"
+    activity="activity"
+
+    command="""INSERT INTO subscriptions (subscription_id, user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+    conn,cur=connect()
+    cur.execute(command,(subscription_id, user_id, analyst_id, report_id, subscription_date, feedbacks, notifications, activity))
     conn.commit()
-    return {"message": "subscription deleted"}
+    return {"Created subscription": subscription_id}
+
+@app.delete("/subscription/{report_id}")
+async def delete_subscription_(report_id: str):
+    command="""SELECT * FROM subscriptions WHERE report_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(report_id,))
+    result=cur.fetchall()
+    command="""DELETE FROM subscriptions WHERE report_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(report_id,))
+    conn.commit()
+    return [{"Deleted subscription_id":row[0],"user_id":row[1]} for row in result]
+
+
+@app.delete("/subscription/{user_id}/{report_id}")
+async def delete_subscription_(user_id: str, report_id: str):
+    command="""SELECT * FROM subscriptions WHERE user_id=%s and report_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(user_id,report_id,))
+    result=cur.fetchall()
+    command="""DELETE FROM subscriptions WHERE user_id=%s and report_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(user_id,report_id,))
+    conn.commit()
+    return {"Deleted subscription": result[0][0]}
 
 #update database based on subscription id
 @app.put("/subscription/")
@@ -166,6 +218,7 @@ async def get_user_subscription(user_id: str):
     conn,cur=connect()
     cur.execute(command,(user_id,))
     result=cur.fetchall()
+    print(result)
     return "report id: ",[{row[3]} for row in result]
 
 
@@ -176,7 +229,6 @@ async def get_report_users(report_id: str):
     cur.execute(command,(report_id,))
     result=cur.fetchall()
     return "user id: ",[{row[1]} for row in result]
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8012)
