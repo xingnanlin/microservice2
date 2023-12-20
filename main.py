@@ -169,7 +169,19 @@ async def create_subscription(user_id: str, report_id: str):
     conn.commit()
     return {"Created subscription": subscription_id}
 
-@app.delete("/subscription/{report_id}")
+@app.delete("/subscription/{subscription_id}")
+async def delete_subscription_(subscription_id: str):
+    command="""SELECT * FROM subscriptions WHERE subscription_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(subscription_id,))
+    result=cur.fetchall()
+    command="""DELETE FROM subscriptions WHERE subscription_id=%s"""
+    conn,cur=connect()
+    cur.execute(command,(subscription_id,))
+    conn.commit()
+    return [{"Deleted subscription_id":row[0]} for row in result]
+
+@app.delete("/subscription/report/{report_id}")
 async def delete_subscription_(report_id: str):
     command="""SELECT * FROM subscriptions WHERE report_id=%s"""
     conn,cur=connect()
