@@ -75,14 +75,6 @@ async def subscriber(subscription_id: str):
     result=cur.fetchall()
     return [{"user_id":row[1]} for row in result]
 
-@app.get("/subscription/{subscription_id}/analyst")
-async def analyst(subscription_id: str):
-    command="SELECT * FROM subscriptions WHERE subscription_id=%s"
-    conn,cur=connect()
-    cur.execute(command,(subscription_id,))
-    result=cur.fetchall()
-    return [{"analyst_id":row[2]} for row in result]
-
 @app.get("/subscription/{subscription_id}/report")
 async def report(subscription_id: str):
     command="SELECT * FROM subscriptions WHERE subscription_id=%s"
